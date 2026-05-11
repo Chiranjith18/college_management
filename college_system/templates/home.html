@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="text-align: center; padding: 4rem 1rem; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border-radius: 24px; color: white; margin-bottom: 3rem; box-shadow: var(--shadow-lg);">
+        <h1 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 1.5rem; letter-spacing: -0.02em;">Elevate Your Learning</h1>
+        <p style="font-size: 1.25rem; opacity: 0.9; max-width: 600px; margin: 0 auto 2.5rem; line-height: 1.6;">The ultimate portal for assignment management, grading, and academic excellence.</p>
+        
+        {% if not user.is_authenticated %}
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <a href="{% url 'signup' %}" class="btn btn-white" style="background: white; color: var(--primary-color); padding: 1rem 2rem; font-size: 1.1rem;">Get Started</a>
+                <a href="{% url 'login' %}" class="btn" style="border: 2px solid rgba(255,255,255,0.3); color: white; padding: 1rem 2rem; font-size: 1.1rem;">Login</a>
+            </div>
+        {% else %}
+            <a href="{% if user.role == 'student' %}{% url 'student-dashboard' %}{% else %}{% url 'teacher-dashboard' %}{% endif %}" class="btn btn-white" style="background: white; color: var(--primary-color); padding: 1rem 2rem; font-size: 1.1rem;">Go to Dashboard</a>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Active Assignments
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            {% for assignment in assignments %}
+                <div style="padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                    <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">{{ assignment.title }}</h4>
+                    <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">Deadline: {{ assignment.deadline|date:"M d, Y H:i" }}</p>
+                    {% if user.role == 'student' %}
+                        <a href="{% url 'submit-assignment' assignment.id %}" class="btn btn-primary btn-sm" style="width: 100%;">Submit Now</a>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div style="grid-column: span 3; text-align: center; padding: 3rem; color: var(--text-muted);">
+                    No active assignments available at the moment.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

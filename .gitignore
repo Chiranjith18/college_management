@@ -1,0 +1,27 @@
+# Virtual Environment
+tri/
+venv/
+.venv/
+env/
+.env/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+pip-selfcheck.json
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

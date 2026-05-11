@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 100px); padding: 2rem;">
+    <div class="card" style="width: 100%; max-width: 450px; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.875rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Welcome Back</h2>
+            <p style="color: var(--text-muted);">Please enter your details to sign in</p>
+        </div>
+
+        <form method="post" class="standard-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger" style="font-size: 0.8125rem; margin-top: 0.25rem;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 1rem;">Login</button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+            <p style="font-size: 0.875rem; color: var(--text-muted);">Don't have an account? <a href="{% url 'signup' %}" style="color: var(--primary-color); font-weight: 600; text-decoration: none;">Create one here</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .standard-form input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
