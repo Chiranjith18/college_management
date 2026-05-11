@@ -33,7 +33,14 @@ def submission_list(request):
             teacher_assignment_ids.add(assignment_id)
     
     all_submissions = get_all_submissions()
-    
+    grades_by_submission_id = {
+        grade.submission_id: grade
+        for grade in Grade.objects.filter(
+            submission_id__in=[s.get('id') for s in all_submissions if s.get('id') is not None]
+        )
+    }
+    user_cache = {}
+
     submissions = []
     for s in all_submissions:
         try:
@@ -51,13 +58,15 @@ def submission_list(request):
             file_path = s.get('file', '')
             s['file_url'] = f"{SUBMISSION_SERVICE_BASE_URL}{file_path}" if file_path.startswith('/') else file_path
             
-            # Fetch student info via API
-            student = get_user(s['student_id'])
+            # Fetch student info once per unique student ID.
+            student_id = s.get('student_id')
+            if student_id not in user_cache:
+                user_cache[student_id] = get_user(student_id)
+            student = user_cache.get(student_id)
             s['student'] = student
             
-            # Check for grade in local DB
-            grade = Grade.objects.filter(submission_id=s['id']).first()
-            s['grade'] = grade
+            # Use bulk-fetched grades map instead of per-row DB query.
+            s['grade'] = grades_by_submission_id.get(s.get('id'))
             
             submissions.append(s)
             
@@ -71,9 +80,26 @@ def grade_submission(request, submission_id):
         raise PermissionDenied
         
     assignments = get_all_assignments()
-    target_assignment = next((a for a in assignments if a['id'] == submission_data['assignment_id']), None)
+    assignments_by_id = {}
+    for assignment in assignments:
+        try:
+            assignments_by_id[int(assignment.get('id'))] = assignment
+        except (TypeError, ValueError):
+            continue
+
+    try:
+        submission_assignment_id = int(submission_data.get('assignment_id'))
+    except (TypeError, ValueError):
+        raise PermissionDenied
+
+    target_assignment = assignments_by_id.get(submission_assignment_id)
     
-    if not target_assignment or target_assignment['created_by_id'] != request.user.id:
+    try:
+        assignment_creator_id = int(target_assignment.get('created_by_id')) if target_assignment else None
+    except (TypeError, ValueError):
+        assignment_creator_id = None
+
+    if not target_assignment or assignment_creator_id != request.user.id:
         raise PermissionDenied
     
     student = get_user(submission_data['student_id'])

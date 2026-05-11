@@ -29,6 +29,13 @@ def student_dashboard_view(request):
         except (TypeError, ValueError):
             continue
     
+    grades_by_submission_id = {
+        grade.submission_id: grade
+        for grade in Grade.objects.filter(
+            submission_id__in=[s.get('id') for s in all_submissions if s.get('id') is not None]
+        )
+    }
+
     # Process assignments
     processed_assignments = []
     submitted_count = 0
@@ -44,8 +51,7 @@ def student_dashboard_view(request):
         
         # Check for grade in local DB
         if submission:
-            grade = Grade.objects.filter(submission_id=submission['id']).first()
-            a['grade'] = grade
+            a['grade'] = grades_by_submission_id.get(submission.get('id'))
             
         deadline_raw = a.get('deadline')
         deadline = parse_datetime(deadline_raw) if deadline_raw else None
