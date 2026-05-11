@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}EduPortal - College Assignment Portal{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 4rem 1rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Welcome to EduPortal</h1>
+    <p style="color: var(--text-muted); font-size: 1.2rem; margin-bottom: 2rem;">Your college assignment management system</p>
+    
+    {% if user.is_authenticated %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            {% if user.role == 'student' %}
+                <a href="http://localhost:8004/dashboard/student/" class="btn btn-primary btn-large">Go to Dashboard</a>
+            {% else %}
+                <a href="http://localhost:8004/dashboard/teacher/" class="btn btn-primary btn-large">Go to Dashboard</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="http://localhost:8001/accounts/signup/" class="btn btn-primary btn-large">Get Started</a>
+            <a href="http://localhost:8001/accounts/login/" class="btn btn-secondary btn-large">Login</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
