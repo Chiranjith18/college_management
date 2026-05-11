@@ -9,7 +9,7 @@
             <h1>{% if is_edit %}Edit Submission{% else %}Submit Assignment{% endif %}</h1>
             <div class="assignment-meta">
                 <span class="meta-item title"><strong>Assignment:</strong> {{ assignment.title }}</span>
-                <span class="meta-item deadline"><strong>Deadline:</strong> {{ assignment.deadline|date:"M d, Y H:i" }}</span>
+                <span class="meta-item deadline"><strong>Deadline:</strong> {{ assignment.deadline|date:"M d, Y H:i"|default:"Not available" }}</span>
             </div>
         </header>
 

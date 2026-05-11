@@ -3,12 +3,22 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from rest_framework import generics
 from .models import Submission
 from .forms import SubmissionForm
 from .serializers import SubmissionSerializer
 from .service_clients import get_assignment
-from datetime import datetime
+
+
+def _parse_assignment_deadline(assignment):
+    deadline_raw = assignment.get('deadline') if assignment else None
+    deadline = parse_datetime(deadline_raw) if deadline_raw else None
+    if deadline and timezone.is_naive(deadline):
+        deadline = timezone.make_aware(deadline, timezone.get_current_timezone())
+    if assignment is not None:
+        assignment['deadline'] = deadline
+    return deadline
 
 # Dummy decorator since accounts app is gone
 def student_required(view_func):
@@ -32,8 +42,8 @@ def submit_assignment(request, assignment_id):
         return redirect('edit-submission', submission_id=existing_submission.id)
 
     # Check if deadline has passed
-    deadline = datetime.fromisoformat(assignment['deadline'].replace('Z', '+00:00'))
-    if deadline < timezone.now():
+    deadline = _parse_assignment_deadline(assignment)
+    if deadline and deadline < timezone.now():
         messages.error(request, f'Submission for "{assignment["title"]}" is closed. Deadline has passed.')
         return redirect('http://localhost:8004/dashboard/student/')
     
@@ -66,8 +76,8 @@ def edit_submission(request, submission_id):
         return redirect('http://localhost:8004/dashboard/student/')
 
     # Check if deadline has passed
-    deadline = datetime.fromisoformat(assignment['deadline'].replace('Z', '+00:00'))
-    if deadline < timezone.now():
+    deadline = _parse_assignment_deadline(assignment)
+    if deadline and deadline < timezone.now():
         messages.error(request, f'Editing for "{assignment["title"]}" is closed. Deadline has passed.')
         return redirect('http://localhost:8004/dashboard/student/')
     
